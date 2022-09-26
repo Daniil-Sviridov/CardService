@@ -5,12 +5,13 @@ namespace CardService.Services
     public class ClientRepository : IClientRepositoryService
     {
         
+        private readonly SampleServiceDbContext _context;
+        private readonly ILogger<ClientRepository> _logger;
 
-        private readonly SampleServiceDbContext _context;        
-
-        public ClientRepository(SampleServiceDbContext context)
+        public ClientRepository(SampleServiceDbContext context, ILogger<ClientRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public int Create(Client data)

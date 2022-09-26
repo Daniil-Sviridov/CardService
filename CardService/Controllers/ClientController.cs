@@ -9,12 +9,12 @@ namespace CardStorageService.Controllers
     [ApiController]
     public class ClientController : ControllerBase
     {
-
+        private readonly ILogger<ClientController> _logger;
         private readonly IClientRepositoryService _clientRepositoryService;        
        
-        public ClientController(IClientRepositoryService clientRepositoryService)
+        public ClientController(IClientRepositoryService clientRepositoryService, ILogger<ClientController> logger)
         {
-
+            _logger = logger;
             _clientRepositoryService = clientRepositoryService;
         }
 
@@ -36,7 +36,8 @@ namespace CardStorageService.Controllers
                 });
             }
             catch (Exception e)
-            {                
+            {
+                _logger.LogError(e, "Create client error.");
                 return Ok(new CreateCardResponse
                 {
                     ErrorCode = 912,

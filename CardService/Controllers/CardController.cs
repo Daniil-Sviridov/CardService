@@ -11,10 +11,12 @@ namespace CardStorageService.Controllers
     public class CardsController : ControllerBase
     {
         private readonly ICardsRepositoryService _cardRepositoryService;
+        private readonly ILogger<CardsController> _logger;
 
-        public CardsController(ICardsRepositoryService cardRepositoryService)
+        public CardsController(ICardsRepositoryService cardRepositoryService, ILogger<CardsController> logger)
         {
             _cardRepositoryService = cardRepositoryService;
+            _logger = logger;
         }
 
         [HttpPost("create")]
@@ -37,6 +39,7 @@ namespace CardStorageService.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "Create card error");
                 return Ok(new CreateCardResponse
                 {
                     ErrorCode = 1012,
@@ -65,6 +68,7 @@ namespace CardStorageService.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "Get cards error.");
                 return Ok(new GetCardsResponse
                 {
                     ErrorCode = 1013,

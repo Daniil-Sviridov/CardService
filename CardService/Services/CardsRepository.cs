@@ -8,12 +8,14 @@ namespace CardService.Services
     {
 
         private readonly SampleServiceDbContext _context;
+        private readonly ILogger<CardsRepository> _logger;
         private readonly IOptions<DatabaseOptions> _databaseOptions;
 
-        public CardsRepository(IOptions<DatabaseOptions> databaseOptions, SampleServiceDbContext context)
+        public CardsRepository(IOptions<DatabaseOptions> databaseOptions, SampleServiceDbContext context, ILogger<CardsRepository> logger)
         {
             _databaseOptions = databaseOptions;
             _context = context;
+            _logger = logger;
         }
 
         public string Create(Cards data)

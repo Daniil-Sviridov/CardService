@@ -2,6 +2,8 @@ using CardStorageService.Data;
 using CardService.Models;
 using Microsoft.EntityFrameworkCore;
 using CardService.Services;
+using Microsoft.AspNetCore.HttpLogging;
+using NLog.Web;
 
 namespace CardService
 {
@@ -13,6 +15,22 @@ namespace CardService
 
             // Add services to the container.
 
+            builder.Services.AddHttpLogging(logging =>
+            {
+                logging.LoggingFields = HttpLoggingFields.All | HttpLoggingFields.RequestQuery;
+                logging.RequestBodyLogLimit = 4096;
+                logging.ResponseBodyLogLimit = 4096;
+                logging.RequestHeaders.Add("Authorization");
+                logging.RequestHeaders.Add("X-Real-IP");
+                logging.RequestHeaders.Add("X-Forwarded-For");
+            });
+
+            builder.Host.ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+
+            }).UseNLog(new NLogAspNetCoreOptions() { RemoveLoggerFactoryFilter = true });
 
 
             builder.Services.Configure<DatabaseOptions>(options =>
