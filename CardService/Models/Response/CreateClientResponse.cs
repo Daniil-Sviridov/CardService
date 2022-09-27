@@ -1,4 +1,4 @@
-﻿namespace CardService.Models.Requests
+﻿namespace CardService.Models.Response
 {
     public class CreateClientResponse : IOperationResult
     {

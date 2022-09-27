@@ -13,6 +13,14 @@ namespace CardService
     {
         private const string SecretCode = "kYp3s6v9y/B?E(H+";
 
+        private IDictionary<string, string> _users = new Dictionary<string, string>()
+        {
+            {"root1", "test"}, // 0
+            {"root2", "test"}, // 1
+            {"root3", "test"}, // 2
+            {"root4", "test"}  // 3
+        };
+
         public string Authenticate(string user, string password)
         {
             if (string.IsNullOrWhiteSpace(user) ||
