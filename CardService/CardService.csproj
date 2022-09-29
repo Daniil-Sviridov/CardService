@@ -25,4 +25,8 @@
     <ProjectReference Include="..\CardStorageService.Data\CardStorageService.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Vali\" />
+  </ItemGroup>
+
 </Project>
