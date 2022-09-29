@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using FluentValidation;
 using CardService.Models.Requests;
 using CardService.Models.Validators;
+using AutoMapper;
 
 namespace CardService
 {
@@ -23,6 +24,14 @@ namespace CardService
             // Add services to the container.
 
             builder.Services.AddScoped<IValidator<AuthenticationRequest>, AuthenticationRequestValidator>();
+
+            #region Config Mapper
+
+            var mapperConfiguration = new MapperConfiguration(m => m.AddProfile(new MappingsProfile()));
+            var mapper = mapperConfiguration.CreateMapper();
+            builder.Services.AddSingleton(mapper);
+
+            #endregion
 
             builder.Services.AddHttpLogging(logging =>
             {
