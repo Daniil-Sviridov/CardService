@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using FluentValidation;
+using CardService.Models.Requests;
+using CardService.Models.Validators;
 
 namespace CardService
 {
@@ -18,6 +21,8 @@ namespace CardService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddScoped<IValidator<AuthenticationRequest>, AuthenticationRequestValidator>();
 
             builder.Services.AddHttpLogging(logging =>
             {
