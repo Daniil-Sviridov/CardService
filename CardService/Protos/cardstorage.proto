@@ -2,3 +2,52 @@
 
 option csharp_namespace = "CardsServiceProtos";
 
+service ClientService
+{
+	rpc Create(ClientCreateRequst) returns (CreateClientResponse);
+
+}
+
+service CardsService
+{
+    rpc GetByClientID(GetByClientIDRequst) returns (GetByClientIDResponse);
+}
+
+message  ClientCreateRequst
+{
+	    string Surname = 1; 
+
+        string FirstName  = 2;
+
+        string Patronymic = 3;
+}
+
+message  CreateClientResponse
+{
+	   int32 ClientId = 1;
+
+       int32 ErrorCode = 2;
+
+       string ErrorMessage = 3;
+}
+
+message GetByClientIDRequst
+{
+    int32 ClientId = 1;
+}
+
+message GetByClientIDResponse
+{
+    repeated Cards Cards = 1;
+}
+
+message Cards 
+{
+    string CardNo = 1;
+
+    string Name = 2;
+
+    string CVV2 = 3;
+
+    string ExpDate = 4;
+}
