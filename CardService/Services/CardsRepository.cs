@@ -34,7 +34,6 @@ namespace CardService.Services
         public IList<Cards> GetByClientId(string id)
         {
             return _context.Cards.Where(c => c.ClientId.ToString() == id).ToList();
-
         }
 
         public int Delete(string id)

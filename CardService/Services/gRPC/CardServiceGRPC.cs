@@ -18,9 +18,19 @@ namespace CardService.Services.gRPC
 
         public override Task<GetByClientIDResponse> GetByClientID(GetByClientIDRequst request, ServerCallContext context)
         {
+            var responce = new GetByClientIDResponse();
 
-            _cardRepositoryService.GetByClientId(request.ClientId.ToString())
-            return base.GetByClientID(request, context);
+            responce.Cards.AddRange(_cardRepositoryService.GetByClientId(request.ClientId.ToString())
+                .Select(card => new Cards 
+                    {
+                    CardNo = card.CardNo,
+                    CVV2 = card.CVV2,
+                    ExpDate = card.ExpDate.ToString(),
+                    Name = card.Name
+                    }).ToList());
+
+            ;
+            return Task.FromResult(responce);
         }
     }
 }

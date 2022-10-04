@@ -11,6 +11,8 @@ namespace CardService.Models
         {
             CreateMap<CardStorageService.Data.Cards, CardDto>();
 
+            //CreateMap<CardStorageService.Data.Cards>, CardsServiceProtos.Cards>();
+
             CreateMap<CreateCardRequest, CardStorageService.Data.Cards>();
 
             CreateMap<Client, ClientDto>();

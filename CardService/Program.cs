@@ -12,6 +12,9 @@ using FluentValidation;
 using CardService.Models.Requests;
 using CardService.Models.Validators;
 using AutoMapper;
+using CardService.Services.gRPC;
+using System.Net;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace CardService
 {
@@ -30,6 +33,16 @@ namespace CardService
             var mapperConfiguration = new MapperConfiguration(m => m.AddProfile(new MappingsProfile()));
             var mapper = mapperConfiguration.CreateMapper();
             builder.Services.AddSingleton(mapper);
+
+            #endregion
+
+            #region Config gRpc
+
+            builder.WebHost.ConfigureKestrel(opt => opt.Listen(IPAddress.Any, 5001, 
+                ListenOptions => {ListenOptions.Protocols = HttpProtocols.Http2;}
+                )
+            );
+            builder.Services.AddGrpc();
 
             #endregion
 
@@ -144,6 +157,11 @@ namespace CardService
             app.UseAuthorization();
 
             app.UseHttpLogging();
+
+            app.UseEndpoints(endpoints => {
+                endpoints.MapGrpcService<CardServiceGRPC>();
+                endpoints.MapGrpcService<ClientServiceGRPC>();
+            });
 
             app.MapControllers();
 
