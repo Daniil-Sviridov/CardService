@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CardService.Models.Requests;
+using CardsServiceProtos;
 using CardStorageService.Data;
 
 namespace CardService.Models
@@ -8,9 +9,16 @@ namespace CardService.Models
     {
         public MappingsProfile()
         {
-            CreateMap<Cards, CardDto>();
+            CreateMap<CardStorageService.Data.Cards, CardDto>();
 
-            CreateMap<CreateCardRequest, Cards>();
+            CreateMap<CreateCardRequest, CardStorageService.Data.Cards>();
+
+            CreateMap<Client, ClientDto>();
+
+            CreateMap<Client, ClientCreateRequst>();
+
+            CreateMap<CreateClientResponse, Client>();
+
         }
     }
 }
