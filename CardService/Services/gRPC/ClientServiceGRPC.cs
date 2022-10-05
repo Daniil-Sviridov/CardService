@@ -19,7 +19,9 @@ namespace CardService.Services.gRPC
 
         public override Task<CreateClientResponse> Create(ClientCreateRequst request, ServerCallContext context)
         {
-            var clientID = _clientRepositoryService.Create(_mapper.Map<Client>(request));
+            //var re =  _mapper.Map<Client>(request);
+
+            var clientID = _clientRepositoryService.Create(new Client() {FirstName =  request.FirstName, Surname = request.Surname, Patronymic = request.Patronymic});
 
             return Task.FromResult(_mapper.Map<CreateClientResponse>(clientID));            
         }

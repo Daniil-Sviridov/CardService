@@ -8,15 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Program.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Protos\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\CardService\Protos\cardstorage.proto" Link="Protos\cardstorage.proto" />
+    <Protobuf Include="..\CardService\Protos\cardstorage.proto" Link="Protos\cardstorage.proto" GrpcServices="Client" />
   </ItemGroup>
 
   <ItemGroup>

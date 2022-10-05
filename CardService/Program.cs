@@ -156,7 +156,8 @@ namespace CardService
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseHttpLogging();
+            app.UseWhen(x => x.Request.ContentType != "application/grpc", add => add.UseHttpLogging());
+            
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapGrpcService<CardServiceGRPC>();
