@@ -1,3 +1,21 @@
+using CardStorageService.Data;
+using CardService.Models;
+using Microsoft.EntityFrameworkCore;
+using CardService.Services;
+using Microsoft.AspNetCore.HttpLogging;
+using NLog.Web;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using FluentValidation;
+using CardService.Models.Requests;
+using CardService.Models.Validators;
+using AutoMapper;
+using CardService.Services.gRPC;
+using System.Net;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+
 namespace CardService
 {
     public class Program
@@ -8,10 +26,121 @@ namespace CardService
 
             // Add services to the container.
 
+            builder.Services.AddScoped<IValidator<AuthenticationRequest>, AuthenticationRequestValidator>();
+
+            #region Config Mapper
+
+            var mapperConfiguration = new MapperConfiguration(m => m.AddProfile(new MappingsProfile()));
+            var mapper = mapperConfiguration.CreateMapper();
+            builder.Services.AddSingleton(mapper);
+
+            #endregion
+
+            #region Config gRpc
+
+            builder.WebHost.ConfigureKestrel(opt => opt.Listen(IPAddress.Any, 5001, 
+                ListenOptions => {ListenOptions.Protocols = HttpProtocols.Http2;}
+                )
+            );
+            builder.Services.AddGrpc();
+
+            #endregion
+
+            builder.Services.AddHttpLogging(logging =>
+            {
+                logging.LoggingFields = HttpLoggingFields.All | HttpLoggingFields.RequestQuery;
+                logging.RequestBodyLogLimit = 4096;
+                logging.ResponseBodyLogLimit = 4096;
+                logging.RequestHeaders.Add("Authorization");
+                logging.RequestHeaders.Add("X-Real-IP");
+                logging.RequestHeaders.Add("X-Forwarded-For");
+            });
+
+            builder.Host.ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+
+            }).UseNLog(new NLogAspNetCoreOptions() { RemoveLoggerFactoryFilter = true });
+
+
+            builder.Services.Configure<DatabaseOptions>(options =>
+            {
+                builder.Configuration.GetSection("Settings:DatabaseOptions").Bind(options);
+            });
+
+            builder.Services.AddDbContext<SampleServiceDbContext>(options =>
+            {
+
+                options.UseSqlite(builder.Configuration["Settings:DatabaseOptions:ConnectionString"]); SQLitePCL.Batteries.Init();
+
+            });
+
+            #region Configure Services
+
+            builder.Services.AddScoped<IClientRepositoryService, ClientRepository>();
+            builder.Services.AddScoped<ICardsRepositoryService, CardsRepository>();
+
+            builder.Services.AddSingleton<IAuthenticateService, AuthenticateService>();
+
+            #endregion
+
+            #region Configure JWT Tokens
+
+            builder.Services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme =
+                JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme =
+                JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new
+                TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthenticateService.SecretKey)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            #endregion
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Мой сервис", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Description = "JWT Authorization header using the Bearer scheme(Example: 'Bearer 12345abcdef')",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme()
+                        {
+                            Reference = new OpenApiReference()
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
+            });
 
             var app = builder.Build();
 
@@ -22,8 +151,18 @@ namespace CardService
                 app.UseSwaggerUI();
             }
 
+            app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseWhen(x => x.Request.ContentType != "application/grpc", add => add.UseHttpLogging());
+            
+
+            app.UseEndpoints(endpoints => {
+                endpoints.MapGrpcService<CardServiceGRPC>();
+                endpoints.MapGrpcService<ClientServiceGRPC>();
+            });
 
             app.MapControllers();
 
